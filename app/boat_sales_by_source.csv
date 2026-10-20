@@ -1,0 +1,604 @@
+"year","month","source","units","value"
+2019,9,"In-Migrant",2,0
+2019,9,"New Dealer",2,31500
+2019,9,"New Import",5,104631
+2019,9,"Used Dealer",9,161871
+2019,9,"Used Dealer Import",4,216188
+2019,9,"Used Import",21,1207799
+2019,9,"Used Private",72,314280
+2019,10,"In-Migrant",62,0
+2019,10,"New Dealer",180,16153939.22
+2019,10,"New Import",57,2776127.64
+2019,10,"Used Dealer",236,16379859.01
+2019,10,"Used Dealer Import",40,3006581.58
+2019,10,"Used Import",308,7798463.78
+2019,10,"Used Private",992,7371374.62
+2019,11,"In-Migrant",42,0
+2019,11,"New Dealer",100,9208882.59
+2019,11,"New Import",51,5828129.1
+2019,11,"Used Dealer",164,12734586.99
+2019,11,"Used Dealer Import",28,1391875.91
+2019,11,"Used Import",213,5435529.19
+2019,11,"Used Private",624,5420917.76
+2019,12,"In-Migrant",32,0
+2019,12,"New Dealer",79,12008583.7
+2019,12,"New Import",37,2275092.78
+2019,12,"Used Dealer",141,9187539.42
+2019,12,"Used Dealer Import",25,2695876
+2019,12,"Used Import",188,3482670.79
+2019,12,"Used Private",516,5897475
+2020,1,"In-Migrant",40,0
+2020,1,"New Dealer",95,10549786.71
+2020,1,"New Import",46,3017660.06
+2020,1,"Used Dealer",163,9458984.49
+2020,1,"Used Dealer Import",38,4056230.32
+2020,1,"Used Import",226,6120230.51
+2020,1,"Used Private",519,7118421.72
+2020,2,"In-Migrant",62,0
+2020,2,"New Dealer",283,19941861.69
+2020,2,"New Import",78,2388673.61
+2020,2,"Used Dealer",137,7291368.19
+2020,2,"Used Dealer Import",36,2240048.08
+2020,2,"Used Import",279,6097410.77
+2020,2,"Used Private",847,7391410.72
+2020,3,"In-Migrant",43,0
+2020,3,"New Dealer",303,18963163.32
+2020,3,"New Import",102,5251151.06
+2020,3,"Used Dealer",246,22116526.82
+2020,3,"Used Dealer Import",50,6878736.88
+2020,3,"Used Import",335,5792608.63
+2020,3,"Used Private",880,6332121.67
+2020,4,"In-Migrant",15,0
+2020,4,"New Dealer",128,9940925.33
+2020,4,"New Import",49,2885373.76
+2020,4,"Used Dealer",90,4986635
+2020,4,"Used Dealer Import",29,2766909.88
+2020,4,"Used Import",136,1938297.88
+2020,4,"Used Private",425,2394398.45
+2020,5,"In-Migrant",167,0
+2020,5,"New Dealer",660,32643754.9
+2020,5,"New Import",220,8867927.14
+2020,5,"Used Dealer",268,9758668.36
+2020,5,"Used Dealer Import",63,3002948.32
+2020,5,"Used Import",856,10171571.6
+2020,5,"Used Private",2973,12107032.58
+2020,6,"In-Migrant",261,0
+2020,6,"New Dealer",1090,55278603.09
+2020,6,"New Import",311,12310967.67
+2020,6,"Used Dealer",487,18375171.02
+2020,6,"Used Dealer Import",100,4626877.53
+2020,6,"Used Import",1166,20578507.11
+2020,6,"Used Private",4175,25901330.9
+2020,7,"In-Migrant",332,0
+2020,7,"New Dealer",1107,56746724.92
+2020,7,"New Import",309,14565317.85
+2020,7,"Used Dealer",537,22626458.16
+2020,7,"Used Dealer Import",91,4271390.71
+2020,7,"Used Import",1280,13750668.46
+2020,7,"Used Private",4941,23906840.26
+2020,8,"In-Migrant",298,0
+2020,8,"New Dealer",639,33306109.18
+2020,8,"New Import",230,9737088.42
+2020,8,"Used Dealer",463,23920363.53
+2020,8,"Used Dealer Import",66,7147843
+2020,8,"Used Import",985,10349036.74
+2020,8,"Used Private",3885,22136386.17
+2020,9,"In-Migrant",159,0
+2020,9,"New Dealer",332,29137338.39
+2020,9,"New Import",161,18893430.24
+2020,9,"Used Dealer",417,29636902.03
+2020,9,"Used Dealer Import",61,7183486.64
+2020,9,"Used Import",721,8784659.93
+2020,9,"Used Private",2737,24001794.36
+2020,10,"In-Migrant",106,0
+2020,10,"New Dealer",183,15875642.62
+2020,10,"New Import",88,3500549.78
+2020,10,"Used Dealer",257,17290762.35
+2020,10,"Used Dealer Import",41,8416550
+2020,10,"Used Import",425,8647226.47
+2020,10,"Used Private",1569,15063759.02
+2020,11,"In-Migrant",41,0
+2020,11,"New Dealer",146,19537535.92
+2020,11,"New Import",63,4357853.9
+2020,11,"Used Dealer",261,25423567.44
+2020,11,"Used Dealer Import",30,4289992.26
+2020,11,"Used Import",240,8789113.13
+2020,11,"Used Private",838,11417004.32
+2020,12,"In-Migrant",45,0
+2020,12,"New Dealer",140,9183057.8
+2020,12,"New Import",61,8304222.14
+2020,12,"Used Dealer",187,19027950.95
+2020,12,"Used Dealer Import",35,9302913
+2020,12,"Used Import",242,5601979.36
+2020,12,"Used Private",740,6720630.3
+2021,1,"In-Migrant",17,0
+2021,1,"New Dealer",83,8919910.26
+2021,1,"New Import",34,1464390.7
+2021,1,"Used Dealer",93,7514355.53
+2021,1,"Used Dealer Import",19,898406.86
+2021,1,"Used Import",112,3451908.83
+2021,1,"Used Private",354,3185408.49
+2021,2,"In-Migrant",45,0
+2021,2,"New Dealer",277,27493236.01
+2021,2,"New Import",74,12436971.08
+2021,2,"Used Dealer",214,16256008.25
+2021,2,"Used Dealer Import",40,6295644.73
+2021,2,"Used Import",292,11017699.72
+2021,2,"Used Private",857,9153647.56
+2021,3,"In-Migrant",82,0
+2021,3,"New Dealer",518,30905297.49
+2021,3,"New Import",182,8657559.64
+2021,3,"Used Dealer",307,21911253.78
+2021,3,"Used Dealer Import",57,2905466.98
+2021,3,"Used Import",580,16036564.64
+2021,3,"Used Private",1721,13662517.48
+2021,4,"In-Migrant",165,0
+2021,4,"New Dealer",647,38301489.54
+2021,4,"New Import",231,12187863.67
+2021,4,"Used Dealer",412,28220201.64
+2021,4,"Used Dealer Import",58,6903877.94
+2021,4,"Used Import",749,12509017.36
+2021,4,"Used Private",2550,16810980.34
+2021,5,"In-Migrant",155,0
+2021,5,"New Dealer",623,38648049.56
+2021,5,"New Import",256,12621458.06
+2021,5,"Used Dealer",353,19801686.72
+2021,5,"Used Dealer Import",47,2814512.11
+2021,5,"Used Import",888,19344946.62
+2021,5,"Used Private",3113,23153882.84
+2021,6,"In-Migrant",241,0
+2021,6,"New Dealer",595,42257659.62
+2021,6,"New Import",277,17934996.78
+2021,6,"Used Dealer",433,24693534.03
+2021,6,"Used Dealer Import",66,7213632.49
+2021,6,"Used Import",1068,11761692.68
+2021,6,"Used Private",4163,32629796.78
+2021,7,"In-Migrant",216,0
+2021,7,"New Dealer",516,30657939.96
+2021,7,"New Import",279,11782369.05
+2021,7,"Used Dealer",359,22174869.43
+2021,7,"Used Dealer Import",52,3596173.89
+2021,7,"Used Import",1088,24393470.6
+2021,7,"Used Private",4252,28629208.47
+2021,8,"In-Migrant",176,0
+2021,8,"New Dealer",615,29938581.68
+2021,8,"New Import",244,11503268.43
+2021,8,"Used Dealer",307,23584166.39
+2021,8,"Used Dealer Import",32,4953028
+2021,8,"Used Import",795,14417739.47
+2021,8,"Used Private",3058,22981814.49
+2021,9,"In-Migrant",103,0
+2021,9,"New Dealer",445,22367892.28
+2021,9,"New Import",152,6638526.11
+2021,9,"Used Dealer",313,22382139.38
+2021,9,"Used Dealer Import",56,8242405.38
+2021,9,"Used Import",508,11100286
+2021,9,"Used Private",1974,22419982.82
+2021,10,"In-Migrant",74,0
+2021,10,"New Dealer",213,23716605.22
+2021,10,"New Import",89,3420364.96
+2021,10,"Used Dealer",251,22983555.37
+2021,10,"Used Dealer Import",38,5795473
+2021,10,"Used Import",327,8831935.8
+2021,10,"Used Private",1237,15521717.56
+2021,11,"In-Migrant",43,0
+2021,11,"New Dealer",177,13753519.66
+2021,11,"New Import",65,4914744.65
+2021,11,"Used Dealer",168,14242334.28
+2021,11,"Used Dealer Import",21,3311650
+2021,11,"Used Import",225,5626663.54
+2021,11,"Used Private",785,10848926.78
+2021,12,"In-Migrant",44,0
+2021,12,"New Dealer",135,10309384.09
+2021,12,"New Import",76,6681549.76
+2021,12,"Used Dealer",140,12338373
+2021,12,"Used Dealer Import",19,2442349
+2021,12,"Used Import",201,7595761.4
+2021,12,"Used Private",591,9997484.76
+2022,1,"In-Migrant",35,0
+2022,1,"New Dealer",181,21764881.93
+2022,1,"New Import",68,2784251.5
+2022,1,"Used Dealer",149,15989151.66
+2022,1,"Used Dealer Import",16,3626899
+2022,1,"Used Import",203,5678876.28
+2022,1,"Used Private",581,7947641.2
+2022,2,"In-Migrant",51,0
+2022,2,"New Dealer",257,22145514.64
+2022,2,"New Import",93,6053448.86
+2022,2,"Used Dealer",172,11529955.95
+2022,2,"Used Dealer Import",22,5622772.13
+2022,2,"Used Import",272,5634072.03
+2022,2,"Used Private",857,11206561.21
+2022,3,"In-Migrant",102,0
+2022,3,"New Dealer",423,28454629.93
+2022,3,"New Import",136,9091699.26
+2022,3,"Used Dealer",237,14571241.67
+2022,3,"Used Dealer Import",31,3650036.88
+2022,3,"Used Import",425,16137880.52
+2022,3,"Used Private",1315,13716644.38
+2022,4,"In-Migrant",102,0
+2022,4,"New Dealer",394,36722721.95
+2022,4,"New Import",198,11238605.08
+2022,4,"Used Dealer",259,20712972.11
+2022,4,"Used Dealer Import",32,4214129.95
+2022,4,"Used Import",561,12687275.46
+2022,4,"Used Private",1751,22117177.32
+2022,5,"In-Migrant",121,0
+2022,5,"New Dealer",543,37875923.48
+2022,5,"New Import",187,9790467.24
+2022,5,"Used Dealer",336,23853837.88
+2022,5,"Used Dealer Import",39,6460990
+2022,5,"Used Import",587,15431434.85
+2022,5,"Used Private",2040,19792580.5
+2022,6,"In-Migrant",149,0
+2022,6,"New Dealer",640,45443223.81
+2022,6,"New Import",216,9684051.16
+2022,6,"Used Dealer",311,21363206.32
+2022,6,"Used Dealer Import",37,5275574.18
+2022,6,"Used Import",884,25154149.79
+2022,6,"Used Private",3003,24717243.39
+2022,7,"In-Migrant",156,0
+2022,7,"New Dealer",664,45755470.04
+2022,7,"New Import",277,18869522.63
+2022,7,"Used Dealer",334,17281593.71
+2022,7,"Used Dealer Import",28,3955228.48
+2022,7,"Used Import",908,17699402.35
+2022,7,"Used Private",3636,26093629.56
+2022,8,"In-Migrant",176,0
+2022,8,"New Dealer",575,36813266.54
+2022,8,"New Import",185,7062807.21
+2022,8,"Used Dealer",408,22534701.11
+2022,8,"Used Dealer Import",35,3673541
+2022,8,"Used Import",755,13377506.28
+2022,8,"Used Private",3036,25279977.39
+2022,9,"In-Migrant",83,0
+2022,9,"New Dealer",298,27456539.45
+2022,9,"New Import",135,7315166.54
+2022,9,"Used Dealer",245,16405449.47
+2022,9,"Used Dealer Import",30,2785324.23
+2022,9,"Used Import",511,10263485.72
+2022,9,"Used Private",1834,17592675.11
+2022,10,"In-Migrant",62,0
+2022,10,"New Dealer",239,19906294.32
+2022,10,"New Import",97,6509089.51
+2022,10,"Used Dealer",215,17757457.29
+2022,10,"Used Dealer Import",31,7535995
+2022,10,"Used Import",309,4512496.49
+2022,10,"Used Private",1233,13121873.31
+2022,11,"In-Migrant",37,0
+2022,11,"New Dealer",161,15615418.79
+2022,11,"New Import",41,4347170.65
+2022,11,"Used Dealer",162,14568337.01
+2022,11,"Used Dealer Import",18,1640668.4
+2022,11,"Used Import",187,8536886.69
+2022,11,"Used Private",633,8792375.43
+2022,12,"In-Migrant",15,0
+2022,12,"New Dealer",124,13827459.69
+2022,12,"New Import",50,3818033.53
+2022,12,"Used Dealer",128,9252188.28
+2022,12,"Used Dealer Import",10,1125114.79
+2022,12,"Used Import",112,4729301.42
+2022,12,"Used Private",451,5153674.45
+2023,1,"In-Migrant",42,0
+2023,1,"New Dealer",132,11971792.95
+2023,1,"New Import",56,2821259.66
+2023,1,"Used Dealer",120,13906309.4
+2023,1,"Used Dealer Import",19,1807970
+2023,1,"Used Import",189,5319925.56
+2023,1,"Used Private",602,13273427.79
+2023,2,"In-Migrant",47,0
+2023,2,"New Dealer",243,24927423.59
+2023,2,"New Import",56,2599446.3
+2023,2,"Used Dealer",118,9729053.3
+2023,2,"Used Dealer Import",22,4429508.95
+2023,2,"Used Import",193,4319649.42
+2023,2,"Used Private",714,6259525.98
+2023,3,"In-Migrant",57,0
+2023,3,"New Dealer",413,26831870.54
+2023,3,"New Import",111,9195353.24
+2023,3,"Used Dealer",183,10257332.9
+2023,3,"Used Dealer Import",24,3184496
+2023,3,"Used Import",333,9980674.9
+2023,3,"Used Private",1017,10392007.11
+2023,4,"In-Migrant",85,0
+2023,4,"New Dealer",430,34656982.83
+2023,4,"New Import",149,8318237.06
+2023,4,"Used Dealer",235,15053989.98
+2023,4,"Used Dealer Import",20,1189115
+2023,4,"Used Import",423,9259712.34
+2023,4,"Used Private",1333,10764156.92
+2023,5,"In-Migrant",124,0
+2023,5,"New Dealer",722,41056869.87
+2023,5,"New Import",236,12231958.21
+2023,5,"Used Dealer",313,16423801.84
+2023,5,"Used Dealer Import",54,3992669
+2023,5,"Used Import",695,12642207.36
+2023,5,"Used Private",2482,17014892.36
+2023,6,"In-Migrant",132,0
+2023,6,"New Dealer",762,47829054.38
+2023,6,"New Import",221,8911393.15
+2023,6,"Used Dealer",381,22860906.19
+2023,6,"Used Dealer Import",37,2766324.98
+2023,6,"Used Import",850,12670192.52
+2023,6,"Used Private",3187,24642006.53
+2023,7,"In-Migrant",183,0
+2023,7,"New Dealer",713,50189075.88
+2023,7,"New Import",215,11900014.14
+2023,7,"Used Dealer",384,24523689.97
+2023,7,"Used Dealer Import",42,2859417
+2023,7,"Used Import",800,13115541.62
+2023,7,"Used Private",3285,24679990.87
+2023,8,"In-Migrant",148,0
+2023,8,"New Dealer",485,30112736.25
+2023,8,"New Import",198,12248826.94
+2023,8,"Used Dealer",339,19975351.47
+2023,8,"Used Dealer Import",43,6586986
+2023,8,"Used Import",620,9987520.28
+2023,8,"Used Private",2427,20353723.31
+2023,9,"In-Migrant",82,0
+2023,9,"New Dealer",238,22547767
+2023,9,"New Import",87,4572962.8
+2023,9,"Used Dealer",236,15840696.65
+2023,9,"Used Dealer Import",25,2161692.5
+2023,9,"Used Import",387,7053873.54
+2023,9,"Used Private",1465,13610726
+2023,10,"In-Migrant",48,0
+2023,10,"New Dealer",153,21074610.25
+2023,10,"New Import",63,3690558
+2023,10,"Used Dealer",189,14799656.74
+2023,10,"Used Dealer Import",23,1862355.27
+2023,10,"Used Import",275,9935623.07
+2023,10,"Used Private",1000,9639651.12
+2023,11,"In-Migrant",33,0
+2023,11,"New Dealer",107,15095059.02
+2023,11,"New Import",40,2688108.22
+2023,11,"Used Dealer",137,10618471.5
+2023,11,"Used Dealer Import",12,1554366.5
+2023,11,"Used Import",186,4383254.1
+2023,11,"Used Private",562,7910395.85
+2023,12,"In-Migrant",27,0
+2023,12,"New Dealer",85,9479505.04
+2023,12,"New Import",38,1979559.37
+2023,12,"Used Dealer",107,10162062.1
+2023,12,"Used Dealer Import",11,1379205.01
+2023,12,"Used Import",148,2678831.01
+2023,12,"Used Private",440,5658152.26
+2024,1,"In-Migrant",30,0
+2024,1,"New Dealer",92,10243332.85
+2024,1,"New Import",30,1092306.96
+2024,1,"Used Dealer",105,9737710.89
+2024,1,"Used Dealer Import",18,1153150.64
+2024,1,"Used Import",187,7739455.8
+2024,1,"Used Private",471,6159437.68
+2024,2,"In-Migrant",34,0
+2024,2,"New Dealer",205,22892154.4
+2024,2,"New Import",64,3931882.86
+2024,2,"Used Dealer",152,10618540.44
+2024,2,"Used Dealer Import",31,6369217.21
+2024,2,"Used Import",216,6144014.61
+2024,2,"Used Private",612,6914997
+2024,3,"In-Migrant",57,0
+2024,3,"New Dealer",345,32293239.09
+2024,3,"New Import",82,8499012.77
+2024,3,"Used Dealer",168,13739495.29
+2024,3,"Used Dealer Import",48,4922033.56
+2024,3,"Used Import",335,8144925.97
+2024,3,"Used Private",1002,10779085.97
+2024,4,"In-Migrant",82,0
+2024,4,"New Dealer",410,32569135
+2024,4,"New Import",135,11217697.25
+2024,4,"Used Dealer",221,14543717.1
+2024,4,"Used Dealer Import",51,4120085.78
+2024,4,"Used Import",483,9437086.18
+2024,4,"Used Private",1599,14989542.01
+2024,5,"In-Migrant",96,0
+2024,5,"New Dealer",550,35028017.88
+2024,5,"New Import",140,7936518.77
+2024,5,"Used Dealer",299,20936153.67
+2024,5,"Used Dealer Import",60,2750244.72
+2024,5,"Used Import",620,12197254.38
+2024,5,"Used Private",2045,17115141.91
+2024,6,"In-Migrant",126,0
+2024,6,"New Dealer",570,41583665.35
+2024,6,"New Import",175,15102715.63
+2024,6,"Used Dealer",303,23230442.76
+2024,6,"Used Dealer Import",48,5181868
+2024,6,"Used Import",703,12853081.72
+2024,6,"Used Private",2487,18174814.56
+2024,7,"In-Migrant",153,0
+2024,7,"New Dealer",751,47376602.77
+2024,7,"New Import",179,15554484.14
+2024,7,"Used Dealer",380,23444742.53
+2024,7,"Used Dealer Import",81,7892580.61
+2024,7,"Used Import",854,15082255.86
+2024,7,"Used Private",3488,22921899.96
+2024,8,"In-Migrant",140,0
+2024,8,"New Dealer",498,33156158.91
+2024,8,"New Import",123,7674785.8
+2024,8,"Used Dealer",294,21356562.21
+2024,8,"Used Dealer Import",44,4591379.39
+2024,8,"Used Import",633,14656068.79
+2024,8,"Used Private",2243,15539651.99
+2024,9,"In-Migrant",65,0
+2024,9,"New Dealer",192,16322252.06
+2024,9,"New Import",89,4546594.7
+2024,9,"Used Dealer",212,14906785.28
+2024,9,"Used Dealer Import",33,1767818
+2024,9,"Used Import",357,7663592.2
+2024,9,"Used Private",1345,12799160.84
+2024,10,"In-Migrant",56,0
+2024,10,"New Dealer",152,27216567.41
+2024,10,"New Import",67,3942532.08
+2024,10,"Used Dealer",220,20292578.48
+2024,10,"Used Dealer Import",26,4573077
+2024,10,"Used Import",290,5471267.94
+2024,10,"Used Private",949,9166851.17
+2024,11,"In-Migrant",43,0
+2024,11,"New Dealer",95,10054432.29
+2024,11,"New Import",39,2774588.47
+2024,11,"Used Dealer",112,10734274.85
+2024,11,"Used Dealer Import",16,1393695
+2024,11,"Used Import",146,2946320.61
+2024,11,"Used Private",557,8158032.89
+2024,12,"In-Migrant",24,0
+2024,12,"New Dealer",177,17045848.99
+2024,12,"New Import",45,2898515.33
+2024,12,"Used Dealer",100,7899053.13
+2024,12,"Used Dealer Import",18,2957175
+2024,12,"Used Import",144,2822043.01
+2024,12,"Used Private",465,4705891
+2025,1,"In-Migrant",36,0
+2025,1,"New Dealer",99,10801762.57
+2025,1,"New Import",36,7346397.45
+2025,1,"Used Dealer",177,16977018.62
+2025,1,"Used Dealer Import",45,5093651
+2025,1,"Used Import",188,17726243.22
+2025,1,"Used Private",556,7697126.35
+2025,2,"In-Migrant",34,0
+2025,2,"New Dealer",168,24055865.07
+2025,2,"New Import",56,3944855.57
+2025,2,"Unclassified",412,16629094.09
+2025,2,"Used Dealer",121,8986340.75
+2025,2,"Used Dealer Import",41,3436162.69
+2025,2,"Used Import",155,4090067.84
+2025,2,"Used Private",474,4763286.27
+2025,3,"In-Migrant",60,0
+2025,3,"New Dealer",228,23800052.93
+2025,3,"New Import",130,8808189.11
+2025,3,"Used Dealer",182,14819679.69
+2025,3,"Used Dealer Import",63,11048572.96
+2025,3,"Used Import",368,15748077.76
+2025,3,"Used Private",992,14030335.76
+2025,4,"In-Migrant",77,0
+2025,4,"New Dealer",357,34172105.57
+2025,4,"New Import",107,12824671.29
+2025,4,"Used Dealer",189,12690516.49
+2025,4,"Used Dealer Import",70,6179012.22
+2025,4,"Used Import",448,10178300.86
+2025,4,"Used Private",1555,10306811.6
+2025,5,"In-Migrant",114,0
+2025,5,"New Dealer",434,40710713.07
+2025,5,"New Import",133,7702086.29
+2025,5,"Used Dealer",291,20030037.46
+2025,5,"Used Dealer Import",79,7843927.07
+2025,5,"Used Import",645,14046866.1
+2025,5,"Used Private",2195,15580282.38
+2025,6,"In-Migrant",153,0
+2025,6,"New Dealer",564,46776389.16
+2025,6,"New Import",156,7377262.51
+2025,6,"Used Dealer",322,20845518.95
+2025,6,"Used Dealer Import",80,9129764.46
+2025,6,"Used Import",753,10953552.39
+2025,6,"Used Private",2997,22567215.9
+2025,7,"In-Migrant",152,0
+2025,7,"New Dealer",666,76010359.48
+2025,7,"New Import",168,7936173.77
+2025,7,"Used Dealer",382,22747032.63
+2025,7,"Used Dealer Import",83,5532842.93
+2025,7,"Used Import",842,12420741.15
+2025,7,"Used Private",3475,21723277.58
+2025,8,"In-Migrant",115,0
+2025,8,"New Dealer",421,37309800.11
+2025,8,"New Import",132,6849690.45
+2025,8,"Used Dealer",333,23893320.28
+2025,8,"Used Dealer Import",59,4289370.18
+2025,8,"Used Import",597,11003500.05
+2025,8,"Used Private",2316,18693231.01
+2025,9,"In-Migrant",83,0
+2025,9,"New Dealer",247,20385994.62
+2025,9,"New Import",89,8716172.84
+2025,9,"Used Dealer",256,21399107.65
+2025,9,"Used Dealer Import",41,3211303.31
+2025,9,"Used Import",419,8121023.37
+2025,9,"Used Private",1518,14234597.58
+2025,10,"In-Migrant",48,0
+2025,10,"New Dealer",147,17253566.75
+2025,10,"New Import",64,2616214.61
+2025,10,"Used Dealer",221,22225433.03
+2025,10,"Used Dealer Import",28,4144238
+2025,10,"Used Import",270,6057109.01
+2025,10,"Used Private",953,9983785
+2025,11,"In-Migrant",28,0
+2025,11,"New Dealer",82,14738767.83
+2025,11,"New Import",43,2292438.98
+2025,11,"Used Dealer",123,15753383.36
+2025,11,"Used Dealer Import",14,3068037.46
+2025,11,"Used Import",148,2991587.89
+2025,11,"Used Private",515,5918672.05
+2025,12,"In-Migrant",35,0
+2025,12,"New Dealer",104,12601168.35
+2025,12,"New Import",40,3074129.13
+2025,12,"Used Dealer",167,15223185.27
+2025,12,"Used Dealer Import",30,4400182.81
+2025,12,"Used Import",145,3993000.8
+2025,12,"Used Private",474,4968754.1
+2026,1,"In-Migrant",47,0
+2026,1,"New Dealer",58,5846011.08
+2026,1,"New Import",40,5582392.63
+2026,1,"Used Dealer",89,6081995.65
+2026,1,"Used Dealer Import",37,5414180.22
+2026,1,"Used Import",171,4564254.04
+2026,1,"Used Private",562,4247831.76
+2026,2,"In-Migrant",40,0
+2026,2,"New Dealer",124,14983118.34
+2026,2,"New Import",46,2489780.4
+2026,2,"Used Dealer",127,9755089.49
+2026,2,"Used Dealer Import",43,2307159.25
+2026,2,"Used Import",218,5303439.07
+2026,2,"Used Private",621,5488040
+2026,3,"In-Migrant",53,0
+2026,3,"New Dealer",232,25743458.78
+2026,3,"New Import",86,5466166.93
+2026,3,"Used Dealer",198,14852376.84
+2026,3,"Used Dealer Import",72,8246577.31
+2026,3,"Used Import",311,7256510.64
+2026,3,"Used Private",1005,7814072.16
+2026,4,"In-Migrant",55,0
+2026,4,"New Dealer",318,37183297.51
+2026,4,"New Import",103,5578866.94
+2026,4,"Used Dealer",277,19604613.71
+2026,4,"Used Dealer Import",57,3184850.8
+2026,4,"Used Import",445,8976768.77
+2026,4,"Used Private",1546,9827662.01
+2026,5,"In-Migrant",76,0
+2026,5,"New Dealer",375,41173384.77
+2026,5,"New Import",121,8221067.97
+2026,5,"Used Dealer",286,16225468.97
+2026,5,"Used Dealer Import",73,7968906.1
+2026,5,"Used Import",589,12290524.79
+2026,5,"Used Private",2193,16547456.49
+2026,6,"In-Migrant",119,0
+2026,6,"New Dealer",535,36682939.91
+2026,6,"New Import",170,10696459.42
+2026,6,"Used Dealer",369,25525102.05
+2026,6,"Used Dealer Import",106,8385142.09
+2026,6,"Used Import",743,17633555.13
+2026,6,"Used Private",2831,21390312.94
+2026,7,"In-Migrant",150,0
+2026,7,"New Dealer",566,32109679.42
+2026,7,"New Import",151,6855492.88
+2026,7,"Used Dealer",359,31362550.61
+2026,7,"Used Dealer Import",85,6144220.98
+2026,7,"Used Import",759,10587192.22
+2026,7,"Used Private",3153,21100548.34
+2026,8,"In-Migrant",90,0
+2026,8,"New Dealer",339,22932515.73
+2026,8,"New Import",92,4836515.63
+2026,8,"Used Dealer",262,17638343.36
+2026,8,"Used Dealer Import",54,4721299.69
+2026,8,"Used Import",540,6883322.49
+2026,8,"Used Private",2184,16061049.98
+2026,9,"In-Migrant",70,0
+2026,9,"New Dealer",163,14619257.55
+2026,9,"New Import",66,3274884.32
+2026,9,"Used Dealer",169,9725332.99
+2026,9,"Used Dealer Import",47,5841062.02
+2026,9,"Used Import",310,5968199.56
+2026,9,"Used Private",1086,9844490.38
+2026,10,"In-Migrant",24,0
+2026,10,"New Dealer",48,7914895.14
+2026,10,"New Import",30,1700792.55
+2026,10,"Used Dealer",72,3939521.78
+2026,10,"Used Dealer Import",15,1494447.4
+2026,10,"Used Import",112,1865665.24
+2026,10,"Used Private",468,4034711.98
