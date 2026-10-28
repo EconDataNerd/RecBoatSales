@@ -21,22 +21,26 @@ default_idx <- max(1, nrow(sales_ord) - incomplete_trailing_months)
 default_year  <- sales_ord$year[default_idx]
 default_month <- sales_ord$month[default_idx]
 
-# Rolling 12-month (R12 / trailing-twelve-months). Deterministic — anchored to the
-# latest complete month — so compute once at load. Reindexed to a gap-free monthly
-# series so each window is a true 12 calendar months even if a month were missing.
-R12 <- local({
-  sdate <- as.Date(sprintf("%d-%02d-01", sales_ord$year, sales_ord$month))
-  full  <- data.frame(date = seq(min(sdate), max(sdate), by = "month"))
-  full$units <- sales_ord$units[match(full$date, sdate)]; full$units[is.na(full$units)] <- 0
-  full$value <- sales_ord$value[match(full$date, sdate)]; full$value[is.na(full$value)] <- 0
+# Rolling 12-month (R12 / trailing-twelve-months). Anchored to the latest complete
+# month. Reindexed to a gap-free monthly series spanning ALL the data, so each window
+# is a true 12 calendar months even if a month (or a source in a month) is missing.
+all_month_dates <- seq(min(as.Date(sprintf("%d-%02d-01", sales_ord$year, sales_ord$month))),
+                       max(as.Date(sprintf("%d-%02d-01", sales_ord$year, sales_ord$month))),
+                       by = "month")
+make_r12 <- function(df) {
+  sdate <- as.Date(sprintf("%d-%02d-01", df$year, df$month))
+  full  <- data.frame(date = all_month_dates)
+  full$units <- df$units[match(full$date, sdate)]; full$units[is.na(full$units)] <- 0
+  full$value <- df$value[match(full$date, sdate)]; full$value[is.na(full$value)] <- 0
   n  <- nrow(full)
   ru <- rv <- rep(NA_real_, n)
   if (n >= 12) for (i in 12:n) {
     ru[i] <- sum(full$units[(i - 11):i]); rv[i] <- sum(full$value[(i - 11):i])
   }
   end_i <- max(1, n - incomplete_trailing_months)   # latest complete month
-  list(full = full, ru = ru, rv = rv, end_i = end_i, n = n)
-})
+  list(full = full, ru = ru, rv = rv, end_i = end_i, n = n, monthly = df)
+}
+R12_all <- make_r12(sales_ord)
 
 # Monthly totals by source (written by prepare_data.R). Optional: the Trends tab
 # shows a note if it hasn't been generated yet.
@@ -63,6 +67,13 @@ source_levels <- if (is.null(by_source)) character(0) else {
   c(names(source_defs)[names(source_defs) %in% present],
     sort(setdiff(present, names(source_defs))))
 }
+
+# Quick picks for the Rolling 12-Mo source filter.
+r12_presets <- list(
+  all        = source_levels,
+  new        = intersect(c("New Import", "New Dealer"), source_levels),
+  used_dealer = intersect(c("Used Dealer", "Used Dealer Import"), source_levels)
+)
 
 # All-source monthly totals keyed "YYYY-MM" — used for a fixed axis ceiling and for
 # looking up the same month a year earlier (the prior-year reference).
@@ -166,6 +177,16 @@ ui <- fluidPage(
                  style = "color:#888; font-size:0.85em; margin-top:8px;")
         ),
         tabPanel("Rolling 12-Mo",
+          if (length(source_levels)) tagList(
+            checkboxGroupInput("r12_src", "Source of Sales",
+                               choices = source_levels, selected = source_levels,
+                               inline = TRUE),
+            tags$div(style = "margin:-6px 0 10px; font-size:0.9em;",
+              "Quick picks: ",
+              actionLink("r12_pick_all", "All sources"), " · ",
+              actionLink("r12_pick_new", "New (Dealer + Import)"), " · ",
+              actionLink("r12_pick_used_dealer", "Used Dealer + Used Dealer Import"))
+          ),
           h4(textOutput("r12_caption")),
           tableOutput("r12_table"),
           tags$p("Rolling 12-month (R12) sums the trailing 12 months, so it removes ",
@@ -361,16 +382,40 @@ server <- function(input, output, session) {
   # ---- Rolling 12-month tab ------------------------------------------------
   # End the R12 window on the month picked in the sidebar, but never past the
   # latest COMPLETE month (so it can't anchor on the still-filling one).
+  # Quick pick links set the Rolling 12-Mo checkboxes.
+  observeEvent(input$r12_pick_all, updateCheckboxGroupInput(session, "r12_src", selected = r12_presets$all))
+  observeEvent(input$r12_pick_new, updateCheckboxGroupInput(session, "r12_src", selected = r12_presets$new))
+  observeEvent(input$r12_pick_used_dealer,
+               updateCheckboxGroupInput(session, "r12_src", selected = r12_presets$used_dealer))
+
+  # R12 series for the selected sources (all sources uses the monthly totals file).
+  r12 <- reactive({
+    sel <- input$r12_src
+    if (is.null(by_source) || is.null(sel) || setequal(sel, source_levels)) return(R12_all)
+    d <- by_source[by_source$source %in% sel, ]
+    if (nrow(d) == 0) d <- data.frame(year = sales_ord$year[1], month = sales_ord$month[1], units = 0, value = 0)
+    m <- aggregate(cbind(units, value) ~ year + month, data = d, FUN = sum)
+    make_r12(m[order(m$year, m$month), ])
+  })
+
+  r12_sources_label <- reactive({
+    sel <- input$r12_src
+    if (is.null(by_source) || is.null(sel) || setequal(sel, source_levels)) return("all sources")
+    if (length(sel) == 0) return("no sources selected")
+    paste(source_levels[source_levels %in% sel], collapse = ", ")
+  })
+
   r12_end_i <- reactive({
     target <- as.Date(sprintf("%d-%02d-01", as.integer(input$year), as.integer(input$month)))
-    idx <- match(target, R12$full$date)
-    if (is.na(idx)) idx <- R12$end_i
-    min(idx, R12$end_i)
+    idx <- match(target, R12_all$full$date)
+    if (is.na(idx)) idx <- R12_all$end_i
+    min(idx, R12_all$end_i)
   })
 
   output$r12_caption <- renderText({
-    ed <- R12$full$date[r12_end_i()]
-    paste0("12 months ending ", format(ed, "%B %Y"), "  vs. the prior 12 months")
+    ed <- r12()$full$date[r12_end_i()]
+    paste0("12 months ending ", format(ed, "%B %Y"), "  vs. the prior 12 months (",
+           r12_sources_label(), ")")
   })
 
   output$r12_table <- renderTable({
@@ -378,10 +423,10 @@ server <- function(input, output, session) {
     if (i < 12)
       return(data.frame(check.names = FALSE,
         "Note" = "Need 12 months of history ending on the selected month — pick a later month."))
-    cu <- R12$ru[i]; cv <- R12$rv[i]
+    cu <- r12()$ru[i]; cv <- r12()$rv[i]
     has_prev <- i >= 24                       # need a full prior 12-month window
-    pu <- if (has_prev) R12$ru[i - 12] else NA
-    pv <- if (has_prev) R12$rv[i - 12] else NA
+    pu <- if (has_prev) r12()$ru[i - 12] else NA
+    pv <- if (has_prev) r12()$rv[i - 12] else NA
     df <- data.frame(
       check.names = FALSE, stringsAsFactors = FALSE,
       m  = c("Boats Sold", "Sales Value"),
@@ -389,17 +434,17 @@ server <- function(input, output, session) {
       p  = c(fmt_int(pu),   fmt_money(pv)),
       ch = c(fmt_pct(pct_change(cu, pu)), fmt_pct(pct_change(cv, pv)))
     )
-    cur_lab <- paste0(format(R12$full$date[i - 11], "%b %Y"), "–", format(R12$full$date[i], "%b %Y"))
+    cur_lab <- paste0(format(r12()$full$date[i - 11], "%b %Y"), "–", format(r12()$full$date[i], "%b %Y"))
     prv_lab <- if (has_prev)
-      paste0(format(R12$full$date[i - 23], "%b %Y"), "–", format(R12$full$date[i - 12], "%b %Y"))
+      paste0(format(r12()$full$date[i - 23], "%b %Y"), "–", format(r12()$full$date[i - 12], "%b %Y"))
     else "Prior 12 Mo"
     names(df) <- c(" ", cur_lab, prv_lab, "Change (%)")
     df
   }, striped = TRUE, bordered = TRUE, align = "lrrr", width = "100%")
 
   output$r12_units_plot <- renderPlot({
-    if (R12$end_i < 12) { blank("Not enough history for a 12-month rolling total."); return() }
-    d <- R12$full$date[12:R12$end_i]; y <- R12$ru[12:R12$end_i]
+    if (r12()$end_i < 12) { blank("Not enough history for a 12-month rolling total."); return() }
+    d <- r12()$full$date[12:r12()$end_i]; y <- r12()$ru[12:r12()$end_i]
     par(mar = c(4, 7, 1, 1))                          # wider left margin for the axis title
     plot(d, y, type = "l", lwd = 2, col = "#4a6fa5", xlab = "", ylab = "",
          las = 1, ylim = c(0, max(y) * 1.08))
@@ -407,7 +452,7 @@ server <- function(input, output, session) {
     watermark()
     i <- r12_end_i()                                  # selected endpoint marker
     if (i >= 12) {
-      md <- R12$full$date[i]; my <- R12$ru[i]
+      md <- r12()$full$date[i]; my <- r12()$ru[i]
       abline(v = md, col = "#bbbbbb", lty = 2)
       points(md, my, pch = 19, col = "#4a6fa5")
       text(md, my, labels = format(round(my), big.mark = ","), pos = 2, cex = 0.85)
@@ -415,8 +460,8 @@ server <- function(input, output, session) {
   })
 
   output$r12_value_plot <- renderPlot({
-    if (R12$end_i < 12) { blank("Not enough history for a 12-month rolling total."); return() }
-    d <- R12$full$date[12:R12$end_i]; y <- R12$rv[12:R12$end_i] / 1e6
+    if (r12()$end_i < 12) { blank("Not enough history for a 12-month rolling total."); return() }
+    d <- r12()$full$date[12:r12()$end_i]; y <- r12()$rv[12:r12()$end_i] / 1e6
     par(mar = c(4, 7, 1, 1))
     plot(d, y, type = "l", lwd = 2, col = "#6aa84f", xlab = "", ylab = "",
          las = 1, yaxt = "n", ylim = c(0, max(y) * 1.08))
@@ -425,7 +470,7 @@ server <- function(input, output, session) {
     watermark()
     i <- r12_end_i()
     if (i >= 12) {
-      md <- R12$full$date[i]; my <- R12$rv[i] / 1e6
+      md <- r12()$full$date[i]; my <- r12()$rv[i] / 1e6
       abline(v = md, col = "#bbbbbb", lty = 2)
       points(md, my, pch = 19, col = "#6aa84f")
       text(md, my, labels = paste0("$", formatC(my, format = "f", digits = 1), "M"),
@@ -434,10 +479,11 @@ server <- function(input, output, session) {
   })
 
   output$ytd_table <- renderTable({
-    ed <- R12$full$date[r12_end_i()]
+    ed <- r12()$full$date[r12_end_i()]
     cy <- as.integer(format(ed, "%Y")); cm <- as.integer(format(ed, "%m"))
+    mdat <- r12()$monthly
     ytd <- function(yr) {
-      s <- sales[sales$year == yr & sales$month <= cm, ]
+      s <- mdat[mdat$year == yr & mdat$month <= cm, ]
       c(units = sum(s$units), value = sum(s$value))
     }
     cur <- ytd(cy); prv <- ytd(cy - 1)
