@@ -153,6 +153,21 @@ fmt_short_money <- function(x) if (is.na(x)) "—" else if (abs(x) >= 1e6)
 ym_to_date <- function(ym) as.Date(sprintf("%d-%02d-01", ym %/% 12L, ym %% 12L + 1L))
 date_to_ym <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m")) - 1L
 
+# ---- Location tab data ----------------------------------------------------
+wa_counties <- c(
+  "Adams", "Asotin", "Benton", "Chelan", "Clallam", "Clark", "Columbia", "Cowlitz",
+  "Douglas", "Ferry", "Franklin", "Garfield", "Grant", "Grays Harbor", "Island",
+  "Jefferson", "King", "Kitsap", "Kittitas", "Klickitat", "Lewis", "Lincoln", "Mason",
+  "Okanogan", "Pacific", "Pend Oreille", "Pierce", "San Juan", "Skagit", "Skamania",
+  "Snohomish", "Spokane", "Stevens", "Thurston", "Wahkiakum", "Walla Walla", "Whatcom",
+  "Whitman", "Yakima"
+)
+western_wa <- c(coastal_counties, "Clark", "Cowlitz", "Lewis", "Skamania")
+loc_regions <- list(all = wa_counties, coastal = coastal_counties,
+                    west = sort(western_wa), east = setdiff(wa_counties, western_wa))
+loc_ready <- !is.null(records) && "res_county" %in% names(records)
+MOOR_COL <- "#45818e"; RES_COL <- "#4b2e83"
+
 # ---- Helpers -------------------------------------------------------------
 get_row <- function(df, yr, mo) {
   r <- df[df$year == yr & df$month == mo, ]
@@ -220,7 +235,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width = 3,
-      conditionalPanel("input.tabs !== 'Explore'",
+      conditionalPanel("input.tabs !== 'Explore' && input.tabs !== 'Location'",
         selectInput("month", "Month",
                     choices = setNames(1:12, month_names),
                     selected = default_month),
@@ -228,8 +243,8 @@ ui <- fluidPage(
                     choices = sort(unique(sales$year), decreasing = TRUE),
                     selected = default_year)
       ),
-      conditionalPanel("input.tabs === 'Explore'",
-        tags$p("The Explore tab has its own filters above the charts.",
+      conditionalPanel("input.tabs === 'Explore' || input.tabs === 'Location'",
+        tags$p("This tab has its own filters above the charts.",
                style = "color:#666; font-size:0.9em;"))
     ),
     mainPanel(
@@ -347,6 +362,53 @@ ui <- fluidPage(
             uiOutput("ex_combos")
           )
         ),
+        tabPanel("Location",
+          if (!loc_ready) tags$p(
+            "Resident county data not found. Run run_weekly.R to add it to boat_sales_records.rds."
+          ) else tagList(
+            tags$p("Where are newly registered boats kept, and where do their owners live? ",
+                   "Moorage county is where the boat is kept; resident county comes from the ",
+                   "owner's ZIP code. Comparing the two shows which counties draw boats from elsewhere.",
+                   style = "color:#555; font-size:0.9em; margin:8px 0 10px;"),
+            fluidRow(
+              column(5, sliderInput("loc_dates", "Transaction Date",
+                                    min = date_min, max = date_max,
+                                    value = c(default_start, date_max),
+                                    timeFormat = "%b %Y", width = "100%")),
+              column(4, radioButtons("loc_view", "Count boats by",
+                                     choices = c("Both, side by side" = "both",
+                                                 "Where boats are moored" = "moor",
+                                                 "Where owners live" = "res"),
+                                     selected = "both")),
+              column(3, selectizeInput("loc_src", "Source of Sales",
+                                       choices = explore_choices[["Source of Sales"]], multiple = TRUE,
+                                       options = list(placeholder = "All", plugins = list("remove_button"))))
+            ),
+            fluidRow(
+              column(7, radioButtons("loc_region", "Counties shown", inline = TRUE,
+                                     choices = c("All of Washington" = "all", "15 coastal counties" = "coastal",
+                                                 "Western WA" = "west", "Eastern WA" = "east"),
+                                     selected = "coastal")),
+              column(5, tags$div(style = "margin-top:22px;",
+                checkboxInput("loc_yoy", "Show change from the same months a year earlier", value = TRUE)))
+            ),
+            h4(textOutput("loc_rank_title"), style = "margin:6px 0;"),
+            plotOutput("loc_rank_plot", height = "auto"),
+            tags$div(textOutput("loc_rank_note"),
+                     style = "color:#888; font-size:0.85em; margin:4px 0 12px;"),
+            tags$hr(),
+            fluidRow(column(4, selectInput("loc_county", "County detail", choices = wa_counties,
+                                           selected = "Thurston"))),
+            h4(textOutput("loc_trend_title"), style = "margin:6px 0;"),
+            plotOutput("loc_trend_plot", height = "280px"),
+            fluidRow(
+              column(6, h5(textOutput("loc_from_title"), style = "font-weight:700;"),
+                     tableOutput("loc_from")),
+              column(6, h5(textOutput("loc_to_title"), style = "font-weight:700;"),
+                     tableOutput("loc_to"))
+            )
+          )
+        ),
         tabPanel("Source & Definitions",
           h4("Source of Sales — definitions"),
           tags$ul(
@@ -377,6 +439,159 @@ ui <- fluidPage(
 
 # ---- Server --------------------------------------------------------------
 server <- function(input, output, session) {
+
+  # ---- Location tab --------------------------------------------------------
+  loc_window <- reactive({
+    rng <- input$loc_dates
+    if (is.null(rng)) rng <- c(default_start, date_max)
+    c(date_to_ym(rng[1]), date_to_ym(rng[2]))
+  })
+
+  loc_slice <- function(lo, hi) {
+    keep <- records$ym >= lo & records$ym <= hi
+    if (length(input$loc_src)) keep <- keep & as.character(records$source) %in% input$loc_src
+    records[keep, ]
+  }
+  loc_cur  <- reactive({ req(loc_ready); w <- loc_window(); loc_slice(w[1], w[2]) })
+  loc_prev <- reactive({ req(loc_ready); w <- loc_window(); loc_slice(w[1] - 12L, w[2] - 12L) })
+  loc_has_prev <- reactive(loc_window()[1] - 12L >= min(records$ym))
+
+  county_counts <- function(d, col) {
+    as.numeric(table(factor(as.character(d[[col]]), levels = wa_counties)))
+  }
+
+  loc_period_label <- reactive({
+    w <- loc_window()
+    paste(format(ym_to_date(w[1]), "%b %Y"), "to", format(ym_to_date(w[2]), "%b %Y"))
+  })
+
+  output$loc_rank_title <- renderText({
+    v <- c(both = "Boats moored and owners living in each county",
+           moor = "Boats moored in each county", res = "Boat owners living in each county")[[input$loc_view]]
+    paste0(v, ", ", loc_period_label())
+  })
+
+  loc_rank_data <- reactive({
+    d <- loc_cur(); p <- loc_prev()
+    df <- data.frame(county = wa_counties,
+                     moor = county_counts(d, "moor_county"), res = county_counts(d, "res_county"),
+                     moor_prev = county_counts(p, "moor_county"), res_prev = county_counts(p, "res_county"),
+                     stringsAsFactors = FALSE)
+    df <- df[df$county %in% loc_regions[[input$loc_region]], ]
+    key <- if (input$loc_view == "res") df$res else df$moor
+    df[order(-key, df$county), ]
+  })
+
+  chg_label <- function(now, prev) {
+    if (!isTRUE(input$loc_yoy) || !loc_has_prev()) return(rep("", length(now)))
+    ifelse(prev > 0, sprintf("  %+.0f%%", 100 * (now - prev) / prev), "")
+  }
+
+  output$loc_rank_plot <- renderPlot({
+    df <- loc_rank_data(); v <- input$loc_view
+    o <- rev(seq_len(nrow(df)))
+    par(mar = c(3, 9, 2, 1))
+    if (v == "both") {
+      m <- rbind(df$res, df$moor)[, o, drop = FALSE]
+      xmax <- max(m, 1) * 1.3
+      bp <- barplot(m, beside = TRUE, horiz = TRUE, names.arg = df$county[o], las = 1,
+                    col = c(RES_COL, MOOR_COL), border = NA, xlim = c(0, xmax),
+                    cex.names = 0.85, xaxt = "n", space = c(0, 0.6))
+      labs <- rbind(paste0(comma(df$res), chg_label(df$res, df$res_prev)),
+                    paste0(comma(df$moor), chg_label(df$moor, df$moor_prev)))[, o, drop = FALSE]
+      text(m, bp, labs, pos = 4, cex = 0.72, xpd = TRUE)
+      legend("topright", inset = c(0, -0.02), xpd = TRUE, horiz = TRUE, bty = "n", cex = 0.85,
+             fill = c(MOOR_COL, RES_COL), border = NA, legend = c("Moored here", "Owner lives here"))
+    } else {
+      y <- if (v == "moor") df$moor else df$res
+      yp <- if (v == "moor") df$moor_prev else df$res_prev
+      xmax <- max(y, 1) * 1.3
+      bp <- barplot(y[o], horiz = TRUE, names.arg = df$county[o], las = 1, border = NA,
+                    col = if (v == "moor") MOOR_COL else RES_COL, xlim = c(0, xmax),
+                    cex.names = 0.85, xaxt = "n")
+      text(y[o], bp, paste0(comma(y), chg_label(y, yp))[o], pos = 4, cex = 0.8, xpd = TRUE)
+    }
+    ticks <- pretty(c(0, xmax / 1.3)); axis(1, at = ticks, labels = comma(ticks), cex.axis = 0.8)
+    watermark()
+  }, height = function() {
+    n <- length(loc_regions[[if (is.null(input$loc_region)) "coastal" else input$loc_region]])
+    max(260, n * (if (identical(input$loc_view, "both")) 30 else 20) + 70)
+  })
+
+  output$loc_rank_note <- renderText({
+    d <- loc_cur()
+    out_m <- sum(d$moor_county == "Out-of-State"); unk_m <- sum(d$moor_county == "Unknown")
+    out_r <- sum(d$res_county == "Out-of-State");  unk_r <- sum(d$res_county == "Unknown")
+    yoy <- if (isTRUE(input$loc_yoy)) {
+      if (loc_has_prev()) "Percentages compare with the same months one year earlier. " else
+        "No data for the same months a year earlier, so no change is shown. "
+    } else ""
+    paste0(yoy, "Not shown: ", comma(out_m), " boats moored out of state and ", comma(unk_m),
+           " with no moorage county; ", comma(out_r), " owners with out of state addresses and ",
+           comma(unk_r), " with an unmatched ZIP code.")
+  })
+
+  output$loc_trend_title <- renderText({
+    v <- c(both = "Boats moored in and owned by residents of ", moor = "Boats moored in ",
+           res = "Boats owned by residents of ")[[input$loc_view]]
+    paste0(v, input$loc_county, " County by month")
+  })
+
+  output$loc_trend_plot <- renderPlot({
+    d <- loc_cur(); w <- loc_window(); yms <- w[1]:w[2]; cty <- input$loc_county; v <- input$loc_view
+    f_m <- factor(d$ym[d$moor_county == cty], levels = yms)
+    f_r <- factor(d$ym[d$res_county == cty], levels = yms)
+    mo <- as.numeric(table(f_m)); re <- as.numeric(table(f_r))
+    labs <- format(ym_to_date(yms), "%b %Y")
+    par(mar = c(5, 5, 2, 1))
+    if (v == "both") {
+      m <- rbind(mo, re)
+      bp <- barplot(m, beside = TRUE, names.arg = labs, las = 2, border = NA, cex.names = 0.75,
+                    col = c(MOOR_COL, RES_COL), ylim = c(0, max(m, 1) * 1.2), ylab = "Boats", cex.axis = 0.8)
+      legend("topright", inset = c(0, -0.08), xpd = TRUE, horiz = TRUE, bty = "n", cex = 0.85,
+             fill = c(MOOR_COL, RES_COL), border = NA, legend = c("Moored here", "Owner lives here"))
+    } else {
+      y <- if (v == "moor") mo else re
+      pcol <- if (v == "moor") "moor_county" else "res_county"
+      prev <- loc_prev(); pv <- as.numeric(table(factor(prev$ym[prev[[pcol]] == cty] + 12L, levels = yms)))
+      show_prev <- isTRUE(input$loc_yoy) && loc_has_prev()
+      bp <- barplot(y, names.arg = labs, las = 2, border = NA, cex.names = 0.75, ylab = "Boats",
+                    col = if (v == "moor") MOOR_COL else RES_COL, cex.axis = 0.8,
+                    ylim = c(0, max(c(y, if (show_prev) pv), 1) * 1.2))
+      text(bp, y, comma(y), pos = 3, cex = 0.75, xpd = TRUE)
+      if (show_prev) {
+        segments(bp - 0.45, pv, bp + 0.45, pv, col = "#111111", lwd = 2)
+        legend("topright", inset = c(0, -0.08), xpd = TRUE, bty = "n", cex = 0.85, lwd = 2,
+               col = "#111111", legend = "Same month, prior year")
+      }
+    }
+    watermark()
+  })
+
+  flow_table <- function(d, label_col, cty, total_label) {
+    if (nrow(d) == 0) return(data.frame(Note = "No boats in this selection."))
+    x <- as.character(d[[label_col]])
+    t <- sort(table(x), decreasing = TRUE)
+    top <- head(t, 8); other <- sum(t) - sum(top)
+    nm <- names(top); nm[nm == cty] <- paste0(cty, " (same county)")
+    out <- data.frame(County = nm, Boats = as.numeric(top), stringsAsFactors = FALSE)
+    if (other > 0) out <- rbind(out, data.frame(County = "All other", Boats = other))
+    out$Share <- sprintf("%.0f%%", 100 * out$Boats / sum(t))
+    out$Boats <- comma(out$Boats)
+    names(out)[1] <- total_label
+    out
+  }
+
+  output$loc_from_title <- renderText(paste0("Where owners of boats moored in ", input$loc_county, " live"))
+  output$loc_to_title   <- renderText(paste0("Where ", input$loc_county, " residents moor their boats"))
+  output$loc_from <- renderTable({
+    d <- loc_cur(); flow_table(d[d$moor_county == input$loc_county, ], "res_county",
+                               input$loc_county, "Owner's county")
+  }, striped = TRUE, bordered = TRUE, align = "lrr", width = "100%")
+  output$loc_to <- renderTable({
+    d <- loc_cur(); flow_table(d[d$res_county == input$loc_county, ], "moor_county",
+                               input$loc_county, "Moorage county")
+  }, striped = TRUE, bordered = TRUE, align = "lrr", width = "100%")
 
   # ---- Explore tab ---------------------------------------------------------
   observeEvent(input$ex_pick_coastal, updateSelectizeInput(session, "ex_moor_county",
