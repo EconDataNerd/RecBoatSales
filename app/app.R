@@ -93,6 +93,45 @@ date_max          <- month_dates[last_complete_idx]
 # Default to roughly the most recent 13 complete months, like the reference view.
 default_start     <- if (last_complete_idx >= 13) month_dates[last_complete_idx - 12] else date_min
 
+# ---- Explore tab data ------------------------------------------------------
+# One row per transaction, written by run_weekly.R. Contains no VIN, make, or ZIP.
+# Optional: the Explore tab shows a note if the file hasn't been generated yet.
+records <- if (file.exists("boat_sales_records.rds")) readRDS("boat_sales_records.rds") else NULL
+
+# Filterable attributes: label shown to users = column in the records file.
+explore_dims <- c(
+  "Source of Sales" = "source",     "Boat Type"      = "boat_type",
+  "Length Class"    = "length_class", "Hull Material" = "hull",
+  "Engine Drive"    = "engine",     "Propulsion"     = "propulsion",
+  "Fuel"            = "fuel",       "Moorage County" = "moor_county"
+)
+
+# The 15 coastal counties WSG serves (used by the "Coastal counties" quick pick).
+coastal_counties <- c(
+  "Clallam", "Grays Harbor", "Island", "Jefferson", "King", "Kitsap", "Mason",
+  "Pacific", "Pierce", "San Juan", "Skagit", "Snohomish", "Thurston",
+  "Wahkiakum", "Whatcom"
+)
+
+# Bars based on fewer boats than this are grayed out as less reliable.
+small_n <- 10
+
+explore_choices <- if (is.null(records)) NULL else lapply(explore_dims, function(col) {
+  x <- records[[col]]
+  lv <- if (is.factor(x)) levels(droplevels(x)) else sort(unique(x))
+  if (col == "source") lv <- c(names(source_defs)[names(source_defs) %in% lv],
+                               setdiff(lv, names(source_defs)))
+  if ("Unknown" %in% lv) lv <- c(setdiff(lv, "Unknown"), "Unknown")
+  lv
+})
+
+comma <- function(x) formatC(round(x), format = "f", digits = 0, big.mark = ",")
+fmt_short_money <- function(x) if (is.na(x)) "—" else if (abs(x) >= 1e6)
+  paste0("$", formatC(x / 1e6, format = "f", digits = 1), "M") else paste0("$", comma(x))
+
+ym_to_date <- function(ym) as.Date(sprintf("%d-%02d-01", ym %/% 12L, ym %% 12L + 1L))
+date_to_ym <- function(d) as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m")) - 1L
+
 # ---- Helpers -------------------------------------------------------------
 get_row <- function(df, yr, mo) {
   r <- df[df$year == yr & df$month == mo, ]
@@ -160,16 +199,21 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width = 3,
-      selectInput("month", "Month",
-                  choices = setNames(1:12, month_names),
-                  selected = default_month),
-      selectInput("year", "Year",
-                  choices = sort(unique(sales$year), decreasing = TRUE),
-                  selected = default_year)
+      conditionalPanel("input.tabs !== 'Explore'",
+        selectInput("month", "Month",
+                    choices = setNames(1:12, month_names),
+                    selected = default_month),
+        selectInput("year", "Year",
+                    choices = sort(unique(sales$year), decreasing = TRUE),
+                    selected = default_year)
+      ),
+      conditionalPanel("input.tabs === 'Explore'",
+        tags$p("The Explore tab has its own filters above the charts.",
+               style = "color:#666; font-size:0.9em;"))
     ),
     mainPanel(
       width = 9,
-      tabsetPanel(
+      tabsetPanel(id = "tabs",
         tabPanel("Monthly Summary",
           h4(textOutput("caption")),
           tableOutput("summary"),
@@ -219,6 +263,56 @@ ui <- fluidPage(
           h4("Sales Value", style = "margin:6px 0;"),
           plotOutput("trend_value", height = "300px")
         ),
+        tabPanel("Explore",
+          if (is.null(records)) tags$p(
+            "Transaction data not found. Run run_weekly.R to generate boat_sales_records.rds."
+          ) else tagList(
+            tags$style(HTML(".selectize-input { max-height: 84px; overflow-y: auto; }")),
+            tags$p("Filter boat sales by any combination of attributes. Leave a box empty to ",
+                   "include everything. Price statistics leave out $0 transactions ",
+                   "(boats registered by new residents) unless you uncheck the box below.",
+                   style = "color:#555; font-size:0.9em; margin:8px 0 10px;"),
+            fluidRow(lapply(names(explore_dims)[1:4], function(lbl) column(3,
+              selectizeInput(paste0("ex_", explore_dims[[lbl]]), lbl,
+                             choices = explore_choices[[lbl]], multiple = TRUE,
+                             options = list(placeholder = "All", plugins = list("remove_button")))))),
+            fluidRow(lapply(names(explore_dims)[5:8], function(lbl) column(3,
+              selectizeInput(paste0("ex_", explore_dims[[lbl]]), lbl,
+                             choices = explore_choices[[lbl]], multiple = TRUE,
+                             options = list(placeholder = "All", plugins = list("remove_button"))),
+              if (lbl == "Moorage County") tags$div(style = "margin:-10px 0 8px; font-size:0.85em;",
+                actionLink("ex_pick_coastal", "15 coastal counties"), " · ",
+                actionLink("ex_pick_county_clear", "Clear"))))),
+            fluidRow(
+              column(6, sliderInput("ex_dates", "Transaction Date",
+                                    min = date_min, max = date_max,
+                                    value = c(default_start, date_max),
+                                    timeFormat = "%b %Y", width = "100%")),
+              column(2, numericInput("ex_pmin", "Price minimum ($)", value = NA, min = 0, step = 1000)),
+              column(2, numericInput("ex_pmax", "Price maximum ($)", value = NA, min = 0, step = 1000)),
+              column(2, tags$div(style = "margin-top:25px;",
+                checkboxInput("ex_excl0", "Exclude $0 from price stats", value = TRUE)),
+                actionLink("ex_reset", "Reset all filters"))
+            ),
+            uiOutput("ex_kpis"),
+            fluidRow(
+              column(6, selectInput("ex_group", "Compare by", choices = explore_dims,
+                                    selected = "source")),
+              column(6, selectInput("ex_metric", "Show",
+                                    choices = c("Median price" = "median", "Average price" = "avg",
+                                                "Boats sold" = "units", "Total sales value" = "value"),
+                                    selected = "median"))
+            ),
+            plotOutput("ex_group_plot", height = "auto"),
+            tags$p(textOutput("ex_small_note", inline = TRUE),
+                   style = "color:#888; font-size:0.85em; margin:4px 0 12px;"),
+            h4(textOutput("ex_trend_title"), style = "margin:10px 0 6px;"),
+            plotOutput("ex_trend_plot", height = "260px"),
+            h4("Summary table", style = "margin:14px 0 6px;"),
+            tableOutput("ex_table"),
+            downloadButton("ex_download", "Download table (CSV)", class = "btn-sm")
+          )
+        ),
         tabPanel("Source & Definitions",
           h4("Source of Sales — definitions"),
           tags$ul(
@@ -249,6 +343,178 @@ ui <- fluidPage(
 
 # ---- Server --------------------------------------------------------------
 server <- function(input, output, session) {
+
+  # ---- Explore tab ---------------------------------------------------------
+  observeEvent(input$ex_pick_coastal, updateSelectizeInput(session, "ex_moor_county",
+    selected = intersect(coastal_counties, explore_choices[["Moorage County"]])))
+  observeEvent(input$ex_pick_county_clear, updateSelectizeInput(session, "ex_moor_county", selected = character(0)))
+  observeEvent(input$ex_reset, {
+    for (col in explore_dims) updateSelectizeInput(session, paste0("ex_", col), selected = character(0))
+    updateSliderInput(session, "ex_dates", value = c(default_start, date_max))
+    updateNumericInput(session, "ex_pmin", value = NA)
+    updateNumericInput(session, "ex_pmax", value = NA)
+    updateCheckboxInput(session, "ex_excl0", value = TRUE)
+  })
+
+  ex_window <- reactive({
+    rng <- input$ex_dates
+    if (is.null(rng)) rng <- c(default_start, date_max)
+    c(date_to_ym(rng[1]), date_to_ym(rng[2]))
+  })
+
+  # Records matching every filter.
+  ex_data <- reactive({
+    req(records)
+    keep <- rep(TRUE, nrow(records))
+    for (col in explore_dims) {
+      sel <- input[[paste0("ex_", col)]]
+      if (length(sel)) keep <- keep & as.character(records[[col]]) %in% sel
+    }
+    w <- ex_window()
+    keep <- keep & records$ym >= w[1] & records$ym <= w[2]
+    if (isTRUE(input$ex_pmin > 0)) keep <- keep & records$price >= input$ex_pmin
+    if (isTRUE(!is.na(input$ex_pmax))) keep <- keep & records$price <= input$ex_pmax
+    records[keep, ]
+  })
+
+  priced <- function(d) if (isTRUE(input$ex_excl0)) d$price > 0 else rep(TRUE, nrow(d))
+
+  output$ex_kpis <- renderUI({
+    d <- ex_data(); p <- d$price[priced(d)]
+    card <- function(label, val, sub = NULL) column(3, tags$div(
+      style = "text-align:center; padding:10px 4px; margin:6px 0 12px; border:1px solid #e3e3e3; border-radius:6px;",
+      tags$div(label, style = "color:#555; font-size:0.9em;"),
+      tags$div(val, style = paste0("font-size:1.6em; font-weight:700; color:", WSG_PURPLE, ";")),
+      if (!is.null(sub)) tags$div(sub, style = "color:#999; font-size:0.75em;")))
+    fluidRow(
+      card("Boats Sold", fmt_int(nrow(d))),
+      card("Total Sales Value", fmt_short_money(sum(d$price))),
+      card("Average Price", if (length(p)) fmt_money(mean(p)) else "—",
+           paste0("n = ", comma(length(p)))),
+      card("Median Price", if (length(p)) fmt_money(median(p)) else "—",
+           paste0("n = ", comma(length(p))))
+    )
+  })
+
+  # One row per category of the "Compare by" attribute.
+  ex_summary <- reactive({
+    d <- ex_data(); col <- input$ex_group
+    if (is.null(col) || nrow(d) == 0) return(NULL)
+    lbl <- names(explore_dims)[explore_dims == col]
+    lv <- explore_choices[[lbl]]
+    g <- factor(as.character(d[[col]]), levels = lv)
+    pr <- priced(d)
+    out <- data.frame(
+      group  = lv,
+      units  = as.numeric(tapply(rep(1, nrow(d)), g, sum)),
+      value  = as.numeric(tapply(d$price, g, sum)),
+      n_priced = as.numeric(tapply(as.numeric(pr), g, sum)),
+      avg    = as.numeric(tapply(d$price[pr], g[pr], mean)),
+      median = as.numeric(tapply(d$price[pr], g[pr], median)),
+      stringsAsFactors = FALSE
+    )
+    out$units[is.na(out$units)] <- 0
+    out[out$units > 0, ]
+  })
+
+  ex_plot_height <- function() {
+    s <- ex_summary(); max(220, 32 * (if (is.null(s)) 1 else nrow(s)) + 70)
+  }
+
+  output$ex_group_plot <- renderPlot({
+    s <- ex_summary()
+    if (is.null(s)) { blank("No sales match these filters."); return() }
+    met <- input$ex_metric
+    is_price <- met %in% c("median", "avg")
+    y <- s[[met]]; y[is.na(y)] <- 0
+    col <- if (is_price) "#6aa84f" else "#4a6fa5"
+    cols <- ifelse(is_price & s$n_priced < small_n, "#cfcfcf", col)
+    lab_val <- if (met == "units") comma(y) else
+               if (met == "value") paste0("$", formatC(y / 1e6, format = "f", digits = 1), "M") else
+               paste0("$", comma(y))
+    n_lab <- if (is_price) s$n_priced else s$units
+    labs <- paste0(lab_val, "   (n = ", comma(n_lab), ")")
+    if (is_price) labs[s$n_priced == 0] <- "no priced sales"
+    o <- rev(seq_len(nrow(s)))                     # first category on top
+    par(mar = c(3, 12, 1, 1))
+    xmax <- max(y, 1) * 1.45
+    bp <- barplot(y[o], names.arg = s$group[o], horiz = TRUE, las = 1, col = cols[o],
+                  border = NA, xlim = c(0, xmax), cex.names = 0.85, xaxt = "n")
+    ticks <- pretty(c(0, max(y, 1)))
+    axis(1, at = ticks, cex.axis = 0.8, labels = if (met == "units") comma(ticks) else
+         if (met == "value") paste0("$", ticks / 1e6, "M") else paste0("$", comma(ticks)))
+    text(y[o], bp, labs[o], pos = 4, cex = 0.8, xpd = TRUE)
+    watermark()
+  }, height = ex_plot_height)
+
+  output$ex_small_note <- renderText({
+    s <- ex_summary()
+    if (is.null(s) || !(input$ex_metric %in% c("median", "avg"))) return("")
+    if (any(s$n_priced > 0 & s$n_priced < small_n))
+      paste0("Gray bars are based on fewer than ", small_n, " sales; treat them with caution.") else ""
+  })
+
+  output$ex_trend_title <- renderText({
+    m <- c(median = "Median price", avg = "Average price", units = "Boats sold",
+           value = "Total sales value")[[input$ex_metric]]
+    paste0(m, " by month (current filters)")
+  })
+
+  output$ex_trend_plot <- renderPlot({
+    d <- ex_data()
+    if (nrow(d) == 0) { blank("No sales match these filters."); return() }
+    w <- ex_window(); yms <- w[1]:w[2]
+    met <- input$ex_metric
+    f <- factor(d$ym, levels = yms); pr <- priced(d)
+    y <- switch(met,
+      units  = as.numeric(tapply(rep(1, nrow(d)), f, sum)),
+      value  = as.numeric(tapply(d$price, f, sum)) / 1e6,
+      avg    = as.numeric(tapply(d$price[pr], f[pr], mean)),
+      median = as.numeric(tapply(d$price[pr], f[pr], median)))
+    y[is.na(y)] <- 0
+    par(mar = c(5, 6, 1, 1))
+    bp <- barplot(y, names.arg = format(ym_to_date(yms), "%b %Y"), las = 2, border = NA,
+                  col = if (met %in% c("median", "avg")) "#6aa84f" else "#4a6fa5",
+                  cex.names = 0.75, yaxt = "n", ylim = c(0, max(y, 1) * 1.1))
+    tk <- axTicks(2)
+    axis(2, at = tk, las = 1, cex.axis = 0.8, labels = switch(met,
+      units = comma(tk), value = paste0("$", tk, "M"),
+      paste0("$", comma(tk))))
+    watermark()
+  })
+
+  ex_table_df <- reactive({
+    s <- ex_summary(); if (is.null(s)) return(NULL)
+    lbl <- names(explore_dims)[explore_dims == input$ex_group]
+    df <- data.frame(s$group, s$units, s$value, s$avg, s$median, s$n_priced,
+                     check.names = FALSE, stringsAsFactors = FALSE)
+    names(df) <- c(lbl, "Boats Sold", "Total Sales Value", "Average Price", "Median Price",
+                   "Sales Used for Price Stats")
+    df
+  })
+
+  output$ex_table <- renderTable({
+    df <- ex_table_df(); if (is.null(df)) return(NULL)
+    df[[2]] <- vapply(df[[2]], fmt_int, ""); df[[3]] <- vapply(df[[3]], fmt_money, "")
+    df[[4]] <- vapply(df[[4]], fmt_money, ""); df[[5]] <- vapply(df[[5]], fmt_money, "")
+    df[[6]] <- vapply(df[[6]], fmt_int, "")
+    df
+  }, striped = TRUE, bordered = TRUE, align = "lrrrrr", width = "100%")
+
+  output$ex_download <- downloadHandler(
+    filename = function() paste0("wa_boat_sales_", input$ex_group, "_", Sys.Date(), ".csv"),
+    content = function(file) {
+      df <- ex_table_df()
+      w <- ex_window()
+      writeLines(c(
+        paste0("# Washington Sea Grant recreational boat sales, ",
+               format(ym_to_date(w[1]), "%b %Y"), " to ", format(ym_to_date(w[2]), "%b %Y")),
+        "# Data source: WA Department of Licensing. Price statistics exclude $0 transactions unless noted."),
+        file)
+      if (!is.null(df)) suppressWarnings(write.table(df, file, sep = ",", row.names = FALSE,
+                                                    append = TRUE, col.names = TRUE))
+    }
+  )
 
   vals <- reactive({
     yr <- as.integer(input$year)
