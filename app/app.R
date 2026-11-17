@@ -125,6 +125,27 @@ explore_choices <- if (is.null(records)) NULL else lapply(explore_dims, function
   lv
 })
 
+# Price ranges for the "Most common combinations" section.
+price_band_breaks <- c(-Inf, 0.5, 10000, 25000, 50000, 100000, 250000, Inf)
+price_band_labels <- c("$0", "Under $10K", "$10K to $25K", "$25K to $50K",
+                       "$50K to $100K", "$100K to $250K", "$250K or more")
+if (!is.null(records)) records$price_band <- factor(
+  as.character(cut(records$price, price_band_breaks, price_band_labels, right = FALSE)),
+  levels = price_band_labels)
+
+combo_dims <- c(
+  "Boat Type" = "boat_type", "Length Class" = "length_class", "Hull Material" = "hull",
+  "Engine Drive" = "engine", "Propulsion" = "propulsion", "Fuel" = "fuel",
+  "Price Range" = "price_band"
+)
+
+boat_type_colors <- c(
+  "Open Motorboat" = "#6aa84f", "Personal" = "#45818e", "Cabin Motorboat" = "#e69138",
+  "Pontoon Boat" = "#76a5af", "Inflatable Boat" = "#38761d", "Auxiliary Sail" = "#6fa8dc",
+  "Sail Only" = "#e06666", "Rowboat" = "#cc4125", "Paddlecraft" = "#f1c232",
+  "Houseboat" = "#f6b26b", "Airboat" = "#3d5a99", "Other" = "#a68a3c", "Unknown" = "#999999"
+)
+
 comma <- function(x) formatC(round(x), format = "f", digits = 0, big.mark = ",")
 fmt_short_money <- function(x) if (is.na(x)) "—" else if (abs(x) >= 1e6)
   paste0("$", formatC(x / 1e6, format = "f", digits = 1), "M") else paste0("$", comma(x))
@@ -310,7 +331,20 @@ ui <- fluidPage(
             plotOutput("ex_trend_plot", height = "260px"),
             h4("Summary table", style = "margin:14px 0 6px;"),
             tableOutput("ex_table"),
-            downloadButton("ex_download", "Download table (CSV)", class = "btn-sm")
+            downloadButton("ex_download", "Download table (CSV)", class = "btn-sm"),
+            tags$hr(),
+            h4("Most common combinations", style = "margin:10px 0 4px;"),
+            tags$p("Which configurations sell most often? Choose the characteristics that ",
+                   "define a combination. The list uses the filters at the top of this tab.",
+                   style = "color:#555; font-size:0.9em; margin:0 0 6px;"),
+            fluidRow(
+              column(9, checkboxGroupInput("ex_combo_dims", "Define a combination by",
+                choices = combo_dims, inline = TRUE,
+                selected = c("boat_type", "length_class", "hull", "engine"))),
+              column(3, selectInput("ex_combo_n", "Show top",
+                choices = c(10, 15, 25), selected = 15)))
+            ,
+            uiOutput("ex_combos")
           )
         ),
         tabPanel("Source & Definitions",
@@ -500,6 +534,60 @@ server <- function(input, output, session) {
     df[[6]] <- vapply(df[[6]], fmt_int, "")
     df
   }, striped = TRUE, bordered = TRUE, align = "lrrrrr", width = "100%")
+
+  # Most common combinations of the chosen characteristics.
+  output$ex_combos <- renderUI({
+    d <- ex_data(); dims <- input$ex_combo_dims
+    if (!length(dims)) return(tags$p("Check at least one characteristic above.", style = "color:#888;"))
+    if (nrow(d) == 0) return(tags$p("No sales match these filters.", style = "color:#888;"))
+    dims <- combo_dims[combo_dims %in% dims]               # keep a consistent order
+    key <- do.call(paste, c(lapply(dims, function(col) as.character(d[[col]])), sep = "\r"))
+    counts <- sort(table(key), decreasing = TRUE)
+    top <- head(counts, as.integer(input$ex_combo_n))
+    total <- nrow(d); top_max <- max(top)
+    pr <- priced(d)
+    rows <- lapply(seq_along(top), function(i) {
+      k <- names(top)[i]; n <- as.numeric(top[i])
+      parts <- strsplit(k, "\r", fixed = TRUE)[[1]]
+      bt <- if ("boat_type" %in% dims) parts[match("boat_type", dims)] else NA
+      col <- if (!is.na(bt) && bt %in% names(boat_type_colors)) boat_type_colors[[bt]] else "#4a6fa5"
+      p <- d$price[key == k & pr]
+      med <- if (length(p)) fmt_money(median(p)) else "\u2014"
+      tags$tr(
+        tags$td(i, style = "color:#888; text-align:right; padding:6px 8px; vertical-align:top;"),
+        tags$td(style = "padding:6px 8px; min-width:220px;",
+          tags$div(style = "display:flex; flex-wrap:wrap; gap:4px;",
+            lapply(seq_along(parts), function(j) tags$span(parts[j],
+              title = names(dims)[j],
+              style = paste0("font-size:0.85em; padding:1px 7px; border-radius:10px; ",
+                             if (j == 1 && !is.na(bt)) paste0("background:", col, "; color:white;")
+                             else "background:#eef0f3; color:#333;")))),
+        ),
+        tags$td(style = "padding:6px 8px; width:38%; min-width:170px;",
+          tags$div(style = "display:flex; align-items:center; gap:8px;",
+            tags$div(style = paste0("height:14px; border-radius:3px; flex-shrink:0; min-width:3px; background:", col,
+                                    "; width:", round(100 * n / top_max * 0.6, 1), "%;")),
+            tags$span(style = "font-size:0.85em; white-space:nowrap;",
+              comma(n), tags$span(paste0(" (", formatC(100 * n / total, format = "f", digits = 1), "%)"),
+                                  style = "color:#888;")))),
+        tags$td(med, style = "padding:6px 8px; text-align:right; white-space:nowrap; font-size:0.9em;")
+      )
+    })
+    covered <- sum(top) / total
+    tagList(
+      tags$div(style = "overflow-x:auto;", tags$table(style = "width:100%; border-collapse:collapse;",
+        tags$thead(tags$tr(
+          tags$th("#", style = "text-align:right; padding:4px 8px; color:#555;"),
+          tags$th(paste(names(dims), collapse = " \u00b7 "), style = "padding:4px 8px; color:#555;"),
+          tags$th("Boats sold (share of filtered sales)", style = "padding:4px 8px; color:#555;"),
+          tags$th("Median price", style = "text-align:right; padding:4px 8px; color:#555;"))),
+        tags$tbody(lapply(rows, function(r) tagAppendAttributes(r, style = "border-top:1px solid #eee;"))))),
+      tags$p(sprintf("These %d combinations account for %s%% of the %s filtered sales (%s distinct combinations in all).",
+                     length(top), formatC(100 * covered, format = "f", digits = 0), comma(total),
+                     comma(length(counts))),
+             style = "color:#888; font-size:0.85em; margin:6px 0 12px;")
+    )
+  })
 
   output$ex_download <- downloadHandler(
     filename = function() paste0("wa_boat_sales_", input$ex_group, "_", Sys.Date(), ".csv"),
